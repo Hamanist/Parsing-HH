@@ -1,5 +1,5 @@
 from pprint import pprint
-from typing import Any
+from typing import Any, Tuple, Union, List, Dict
 
 import requests
 
@@ -25,7 +25,7 @@ class Parse_HH:
     __employer_id = [58320, 2748, 4181, 10477195, 9498112, 1420559, 1793216, 697715, 6836, 3529]
 
     @staticmethod
-    def salary_check(salary_data) -> tuple:
+    def salary_check(salary_data: dict | None) -> Tuple[Union[int, str], Union[int, str]]:
         """
         Проверка зарплат на None.
         Метод будет использоваться в методе (_parse_vacancies)
@@ -42,14 +42,14 @@ class Parse_HH:
 
 
 
-    def get_data_via_API(self):
+    def get_data_via_API(self) -> List[Dict[str, Union[str, int]]]:
         """
         Получить данные через API
         :return: Список, где хранятся словари с данными.
         """
         __params = {
             "employer_id": self.__employer_id,
-            'per_page': '25'
+            'per_page': '10'
         }
 
         response = requests.get(url=self.__url, params=__params)
@@ -59,7 +59,7 @@ class Parse_HH:
             return f'Код ошибки: {response.status_code}'
 
 
-    def _parse_vacancies(self, data):
+    def _parse_vacancies(self, data)-> List[Dict[str, Union[str, int]]]:
         """
 
         :param data: ответ (response.json()) с метода get_data_via_API для парсинга
@@ -82,6 +82,3 @@ class Parse_HH:
                 'salary_max': salary_max
             })
         return answers
-
-
-pprint(Parse_HH().get_data_via_API())
