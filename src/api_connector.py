@@ -22,6 +22,7 @@ class Parse_HH:
     __url = 'https://api.hh.ru/vacancies'
     __employer_id = [58320, 2748, 4181, 10477195, 9498112, 1420559, 1793216, 697715, 6836, 3529]
 
+
     def get_data_via_API(self) -> int | Any:
         """
         Получить данные через API
@@ -29,12 +30,38 @@ class Parse_HH:
         """
         __params = {
             "employer_id": self.__employer_id,
-            'per_page': '10'
+            'per_page': '5'
         }
 
         response = requests.get(url=self.__url, params=__params)
         if response.status_code == 200:
-            return self._parse(response.json())
+            return self._parse_vacancies(response.json())
         else:
-            return response.status_code
+            return f'Код ошибки: {response.status_code}'
 
+
+    def _parse_vacancies(self, data):
+        """
+
+        :param data: данные с метода get_data_via_API для парсинга
+        :return:
+        """
+        answers = []
+        for vacancies in data['items']:
+            pprint(vacancies)
+            answers.append({
+                'id': vacancies['employer']['id'],
+                'company': vacancies['employer']['name'],
+                'department': vacancies['department']['name'],
+                'requirement': vacancies['snippet']['requirement'],
+                'responsibilities': vacancies['snippet']['responsibility'],
+                'url': vacancies['alternate_url'],
+                'area': vacancies['area']['name'],
+                'profession': vacancies['name'],
+                'experience': vacancies['experience']['name'],
+
+            })
+        pprint(answers)
+
+
+pprint(Parse_HH().get_data_via_API())
