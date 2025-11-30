@@ -6,8 +6,10 @@ import requests
 
 class Parse_HH:
     """
-        __url - поиск по HH
-        __employer_id - список компаний
+    Класс для парсинга нужных нам полей из HH.
+    Вернет список валидных полей для заполнения ими БД.
+    __url - поиск по HH
+    __employer_id - список компаний
             [Россельхозбанк,
             ПАО Ростелеком,
             Банк ВТБ (ПАО),
@@ -22,15 +24,32 @@ class Parse_HH:
     __url = 'https://api.hh.ru/vacancies'
     __employer_id = [58320, 2748, 4181, 10477195, 9498112, 1420559, 1793216, 697715, 6836, 3529]
 
+    @staticmethod
+    def salary_check(salary_data) -> tuple:
+        """
+        Проверка зарплат на None.
+        Метод будет использоваться в методе (_parse_vacancies)
+        :param salary_data: Указана или не указана зарплата
+        :return: Если не казана выводит (Не указана), в другом случае выводит зарплату
+        """
+        if salary_data is None:
+            return 'Не указана', 'Не указана'
 
-    def get_data_via_API(self) -> int | Any:
+        return (
+            salary_data['from'] if salary_data.get('from') is not None else 'Не указана',
+            salary_data['to'] if salary_data.get('to') is not None else 'Не указана'
+        )
+
+
+
+    def get_data_via_API(self):
         """
         Получить данные через API
-        :return:
+        :return: Список, где хранятся словари с данными.
         """
         __params = {
             "employer_id": self.__employer_id,
-            'per_page': '5'
+            'per_page': '25'
         }
 
         response = requests.get(url=self.__url, params=__params)
@@ -43,25 +62,26 @@ class Parse_HH:
     def _parse_vacancies(self, data):
         """
 
-        :param data: данные с метода get_data_via_API для парсинга
-        :return:
+        :param data: ответ (response.json()) с метода get_data_via_API для парсинга
+        :return: Список данных с парсинга
         """
         answers = []
         for vacancies in data['items']:
-            pprint(vacancies)
+            salary_min, salary_max = self.salary_check(vacancies['salary'])
+
             answers.append({
                 'id': vacancies['employer']['id'],
                 'company': vacancies['employer']['name'],
-                'department': vacancies['department']['name'],
                 'requirement': vacancies['snippet']['requirement'],
                 'responsibilities': vacancies['snippet']['responsibility'],
                 'url': vacancies['alternate_url'],
                 'area': vacancies['area']['name'],
                 'profession': vacancies['name'],
                 'experience': vacancies['experience']['name'],
-
+                'salary_min': salary_min,
+                'salary_max': salary_max
             })
-        pprint(answers)
+        return answers
 
 
 pprint(Parse_HH().get_data_via_API())
