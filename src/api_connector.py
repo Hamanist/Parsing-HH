@@ -1,10 +1,9 @@
-from pprint import pprint
 from typing import Any, Tuple, Union, List, Dict
 
 import requests
 
 
-class Parse_HH:
+class ParseHH:
     """
     Класс для парсинга нужных нам полей из HH.
     Вернет список валидных полей для заполнения ими БД.
@@ -40,9 +39,7 @@ class Parse_HH:
             salary_data['to'] if salary_data.get('to') is not None else 'Не указана'
         )
 
-
-
-    def get_data_via_API(self) -> List[Dict[str, Union[str, int]]]:
+    def get_data_via_API(self) -> List[Dict[str, Union[str, int]]] | str:
         """
         Получить данные через API
         :return: Список, где хранятся словари с данными.
@@ -58,8 +55,7 @@ class Parse_HH:
         else:
             return f'Код ошибки: {response.status_code}'
 
-
-    def _parse_vacancies(self, data)-> List[Dict[str, Union[str, int]]]:
+    def _parse_vacancies(self, data) -> List[Dict[str, Union[str, int]]]:
         """
 
         :param data: ответ (response.json()) с метода get_data_via_API для парсинга
