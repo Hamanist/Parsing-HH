@@ -46,7 +46,7 @@ class ParseHH:
         """
         __params = {
             "employer_id": self.__employer_id,
-            'per_page': '10'
+            'per_page': '100'
         }
 
         response = requests.get(url=self.__url, params=__params)
