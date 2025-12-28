@@ -1,3 +1,4 @@
+from pprint import pprint
 from typing import Any, Tuple, Union, List, Dict
 
 import requests
@@ -18,10 +19,13 @@ class ParseHH:
             Солар,
             Островок,
             Fplus,
-            СБЕР]
+            СБЕР,
+            Wiren Board,
+            Procter & Gamble,
+            WILDBERRIES]
     """
     __url = 'https://api.hh.ru/vacancies'
-    __employer_id = [58320, 2748, 4181, 10477195, 9498112, 1420559, 1793216, 697715, 6836, 3529]
+    __employer_id = [58320, 2748, 4181, 10477195, 9498112, 1420559, 1793216, 697715, 6836, 3529, 1995794, 4949, 87021]
 
     @staticmethod
     def salary_check(salary_data: dict | None) -> Tuple[Union[int, str], Union[int, str]]:
