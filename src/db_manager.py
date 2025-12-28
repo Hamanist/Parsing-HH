@@ -44,29 +44,37 @@ class DBManager:
                                  vac['salary_min'], vac['salary_max'], vac['requirement'], vac['responsibilities'])
                                 )
 
+    def get_companies_and_vacancies_count(self)-> list[tuple[str, int]]:
+        """ Список всех компаний и количество вакансий у каждой компании
+            return - данные в виде (Компания и количество вакансий)
+        """
+        with psycopg2.connect(**self.conn_params) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""SELECT e.name, COUNT(v.employer_id) AS vacancies_count FROM employers e
+                            LEFT JOIN vacancies v ON e.employer_id = v.employer_id
+                            GROUP BY e.employer_id, e.name
+                            ORDER BY vacancies_count DESC""")
 
-    def get_companies_and_vacancies_count(self):
-        """список всех компаний и количество вакансий у каждой компании"""
-        ...
+                return cur.fetchall()
 
-    # — список всех компаний и количество вакансий у каждой компании
     def get_all_vacancies(self):
-        ...
+        """ список всех вакансий с указанием названия компании, вакансии, зарплаты и ссылки"""
+        pass
 
-    # — список всех вакансий с указанием названия компании, вакансии, зарплаты и ссылки
     def get_avg_salary(self):
-        ...
+        """средняя зарплата по вакансиям"""
+        pass
 
-    # — средняя зарплата по вакансиям
     def get_vacancies_with_higher_salary(self):
-        ...
+        """список вакансий с зарплатой выше средней"""
+        pass
 
-    # — список вакансий с зарплатой выше средней
     def get_vacancies_with_keyword(self):
-        ...
-    # — список вакансий, в названии которых содержатся переданные слова
+        """список вакансий, в названии которых содержатся переданные слова"""
+        pass
 
 
 db = DBManager()
-db.insert_employers(ParseHH().get_data_via_API())
-db.insert_vacancies(ParseHH().get_data_via_API())
+print(db.get_companies_and_vacancies_count(), sep='\n')
+# db.insert_employers(ParseHH().get_data_via_API())
+# db.insert_vacancies(ParseHH().get_data_via_API())
