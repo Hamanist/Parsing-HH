@@ -77,8 +77,8 @@ def create_table() -> None:
                 area VARCHAR(80),
                 profession VARCHAR(255),
                 experience VARCHAR(150),
-                salary_min VARCHAR(50),
-                salary_max VARCHAR(50),
+                salary_min INTEGER,
+                salary_max INTEGER,
                 requirement TEXT,
                 responsibilities TEXT
                 )"""
