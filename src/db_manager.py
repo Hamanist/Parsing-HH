@@ -44,7 +44,7 @@ class DBManager:
                                  vac['salary_min'], vac['salary_max'], vac['requirement'], vac['responsibilities'])
                                 )
 
-    def get_companies_and_vacancies_count(self)-> list[tuple[str, int]]:
+    def get_companies_and_vacancies_count(self) -> list[tuple[str, int]]:
         """ Список всех компаний и количество вакансий у каждой компании
             return - данные в виде (Компания и количество вакансий)
         """
@@ -58,16 +58,52 @@ class DBManager:
                 return cur.fetchall()
 
     def get_all_vacancies(self):
-        """ список всех вакансий с указанием названия компании, вакансии, зарплаты и ссылки"""
-        pass
+        """ список всех вакансий с указанием названия
+            компании, вакансии, зарплаты и ссылки"""
+
+        with psycopg2.connect(**self.conn_params) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""SELECT e.name, v.profession, v.salary_min, v.salary_max, v.url FROM employers e
+                            JOIN vacancies v USING(employer_id)
+                            ORDER BY e.name""")
+                return cur.fetchall()
 
     def get_avg_salary(self):
-        """средняя зарплата по вакансиям"""
-        pass
+        """Средняя зарплата по вакансиям
+
+            Возвращает вакансии, где указана и минимальная, и максимальная зарплата.
+            Средняя зарплата рассчитывается как (min + max) / 2.
+            Вакансии с частично указанной зарплатой исключаются.
+            """
+        with psycopg2.connect(**self.conn_params) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""SELECT e.name,
+                            (salary_min + salary_max) / 2
+                            FROM employers e
+                            JOIN vacancies v USING(employer_id)
+                            WHERE salary_min IS NOT NULL AND salary_max IS NOT NULL
+                            ORDER BY e.name""")
+                return cur.fetchall()
 
     def get_vacancies_with_higher_salary(self):
-        """список вакансий с зарплатой выше средней"""
-        pass
+        """ Список вакансий с зарплатой выше средней.
+            Получает список вакансий, у которых средняя зарплата (min+max)/2
+            выше средней зарплаты по всем вакансиям (где указаны и min, и max).
+        """
+        with psycopg2.connect(**self.conn_params) as conn:
+            with conn.cursor() as cur:
+                cur.execute("""SELECT
+	                                e.name,
+	                                v.profession,
+	                                (v.salary_min + v.salary_max) / 2 AS avg_salary,
+	                            FROM employers e
+                                JOIN vacancies v USING(employer_id)
+
+                                WHERE v.salary_min IS NOT NULL AND v.salary_max IS NOT NULL
+	                                AND (v.salary_min + v.salary_max) / 2 > (SELECT AVG((v2.salary_min + v2.salary_max) / 2)
+	                                FROM vacancies v2
+	                                WHERE v2.salary_min IS NOT NULL AND v2.salary_max IS NOT NULL)
+                                ORDER BY avg_salary DESC""")
 
     def get_vacancies_with_keyword(self):
         """список вакансий, в названии которых содержатся переданные слова"""
@@ -75,6 +111,7 @@ class DBManager:
 
 
 db = DBManager()
-print(db.get_companies_and_vacancies_count(), sep='\n')
 # db.insert_employers(ParseHH().get_data_via_API())
 # db.insert_vacancies(ParseHH().get_data_via_API())
+# print(db.get_companies_and_vacancies_count(), sep='\n')
+print(*db.get_avg_salary(), sep='\n')
