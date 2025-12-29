@@ -28,7 +28,7 @@ class ParseHH:
     __employer_id = [58320, 2748, 4181, 10477195, 9498112, 1420559, 1793216, 697715, 6836, 3529, 1995794, 4949, 87021]
 
     @staticmethod
-    def salary_check(salary_data: dict | None) -> Tuple[Union[int, str], Union[int, str]]:
+    def salary_check(salary_data: dict | None) -> Tuple[Union[int, None], Union[int, None]]:
         """
         Проверка зарплат на None.
         Метод будет использоваться в методе (_parse_vacancies)
@@ -36,14 +36,14 @@ class ParseHH:
         :return: Если не казана выводит (Не указана), в другом случае выводит зарплату
         """
         if salary_data is None:
-            return 'Не указана', 'Не указана'
+            return None, None
 
         return (
-            salary_data['from'] if salary_data.get('from') is not None else 'Не указана',
-            salary_data['to'] if salary_data.get('to') is not None else 'Не указана'
+            salary_data.get('from'),  # вернёт int или None
+            salary_data.get('to')  # вернёт int или None
         )
 
-    def get_data_via_API(self) -> List[Dict[str, Union[str, int]]] | str:
+    def get_data_via_API(self) -> list[dict[str, str | int]] | str:
         """
         Получить данные через API
         :return: Список, где хранятся словари с данными.
@@ -59,7 +59,7 @@ class ParseHH:
         else:
             return f'Код ошибки: {response.status_code}'
 
-    def _parse_vacancies(self, data) -> List[Dict[str, Union[str, int]]]:
+    def _parse_vacancies(self, data) -> List[Dict[str, Union[str, int, None]]]:
         """
 
         :param data: ответ (response.json()) с метода get_data_via_API для парсинга
