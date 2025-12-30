@@ -57,7 +57,7 @@ class DBManager:
 
                 return cur.fetchall()
 
-    def get_all_vacancies(self):
+    def get_all_vacancies(self) -> list[tuple]:
         """ список всех вакансий с указанием названия
             компании, вакансии, зарплаты и ссылки"""
 
@@ -68,7 +68,7 @@ class DBManager:
                             ORDER BY e.name""")
                 return cur.fetchall()
 
-    def get_avg_salary(self):
+    def get_avg_salary(self) -> list[tuple]:
         """Средняя зарплата по вакансиям
 
             Возвращает вакансии, где указана и минимальная, и максимальная зарплата.
@@ -85,7 +85,7 @@ class DBManager:
                             ORDER BY e.name""")
                 return cur.fetchall()
 
-    def get_vacancies_with_higher_salary(self):
+    def get_vacancies_with_higher_salary(self) -> list[tuple]:
         """ Список вакансий с зарплатой выше средней.
             Получает список вакансий, у которых средняя зарплата (min+max)/2
             выше средней зарплаты по всем вакансиям (где указаны и min, и max).
@@ -95,7 +95,7 @@ class DBManager:
                 cur.execute("""SELECT
 	                                e.name,
 	                                v.profession,
-	                                (v.salary_min + v.salary_max) / 2 AS avg_salary,
+	                                (v.salary_min + v.salary_max) / 2 AS avg_salary
 	                            FROM employers e
                                 JOIN vacancies v USING(employer_id)
 
@@ -104,14 +104,28 @@ class DBManager:
 	                                FROM vacancies v2
 	                                WHERE v2.salary_min IS NOT NULL AND v2.salary_max IS NOT NULL)
                                 ORDER BY avg_salary DESC""")
+                return cur.fetchall()
 
-    def get_vacancies_with_keyword(self):
-        """список вакансий, в названии которых содержатся переданные слова"""
-        pass
-
-
-db = DBManager()
-# db.insert_employers(ParseHH().get_data_via_API())
-# db.insert_vacancies(ParseHH().get_data_via_API())
-# print(db.get_companies_and_vacancies_count(), sep='\n')
-print(*db.get_avg_salary(), sep='\n')
+    def get_vacancies_with_keyword(self, keyword: str = 'стажер') -> list[tuple]:
+        """ Список вакансий, в названии которых содержатся переданные слова
+            Поиск нечувствителен к регистру (ILIKE).
+            :param keyword: Ключевое слово для поиска в названии вакансии.
+            :return: Список кортежей с данными о вакансиях.
+        """
+        with psycopg2.connect(**self.conn_params) as conn:
+            with conn.cursor() as cur:
+                cur.execute(f"""SELECT 
+                                e.name,
+                                v.area,
+                                v.profession,
+                                v.experience,
+                                v.salary_min,
+                                v.salary_max,
+                                v.requirement,
+                                v.responsibilities,
+                                v.url
+                            FROM employers e
+                            JOIN vacancies v USING(employer_id)
+                            WHERE v.profession ILIKE %s
+                            ORDER BY e.name""", (f'%{keyword}%',))
+                return cur.fetchall()
