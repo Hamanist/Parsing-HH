@@ -33,7 +33,7 @@ class ParseHH:
         Проверка зарплат на None.
         Метод будет использоваться в методе (_parse_vacancies)
         :param salary_data: Указана или не указана зарплата
-        :return: Если не казана выводит (Не указана), в другом случае выводит зарплату
+        :return: Если не указана выводит None (для БД null), в другом случае выводит зарплату
         """
         if salary_data is None:
             return None, None
